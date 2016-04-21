@@ -26,11 +26,13 @@ describe('check module', function() {
         [obj, Object, 'object'],
         [false, Boolean, 'boolean'],
         [4, Match.Integer, 'Match.Integer'],
+        ['validIdentifier345', Match.IdentifierString, 'Match.IdentifierString'],
         [notDefined, undefined, 'undefined'],
         [nullVar, null, 'null'],
         [arr, Array, 'Array']
     ];
     var failValues = [
+        undefined,
         undefined,
         undefined,
         undefined,
@@ -177,6 +179,9 @@ describe('check module', function() {
         assert.throws(
             function() { check([], Match.OneOf(null, Number, String)) },
             'check array against number of types fails');
+        assert.throws(
+            function() { check([], Match.OneOf()) },
+            'OneOf needs something passed');
     });
 
     it('should match.test and check using Match.Where', function() {
@@ -210,6 +215,9 @@ describe('check module', function() {
         assert.throws(function() {
             check(objFail, Match.ObjectHash(Function));
         }, 'should fail if one property is a string');
+        assert.throws(function() {
+            check({}, Match.ObjectHash(Function));
+        }, 'should fail as empty object');
     });
 
     it('should match.test and check using Match.Subclass', function() {
@@ -228,6 +236,10 @@ describe('check module', function() {
         }, 'check instance with Match.Subclass including superclass throws');
     });
 
-
-
+    it('should be able to be disabled', function () {
+        check.disabled = true;
+        assert.doesNotThrow(function() {
+            check(1, String);
+        }, 'check is disabled');
+    });
 });
