@@ -6,12 +6,15 @@ var _ = require('protojs')
     , Match = check.Match;
 
 describe('check module', function() {
+    function Test(){}
     var notDefined
         , nullVar = null
         , obj = {prop: 'test'}
         , arr = [1, 2, 3]
         , func = function(){}
-        , myDate = new Date();
+        , myDate = new Date()
+        , testInst = new Test();
+
 
     var toTest = [
         [func, Function, 'function'],
@@ -45,8 +48,10 @@ describe('check module', function() {
     it('should match.test for different data types', function() {
         toTest.forEach(function(val, i) {
             assert(Match.test(val[0], val[1]), 'match.test ' + val[2]);
-            assert.equal(Match.test(val[0], failValues[i]), false, 'match.test fails ' + val[2]);
+            assert.notEqual(Match.test(val[0], failValues[i]), 'match.test fails ' + val[2]);
         });
+
+        assert.notEqual(Match.test(obj, testInst), 'match with non plain object');
     });
 
     it('should check test for different data types', function() {
@@ -71,30 +76,30 @@ describe('check module', function() {
         });
     });
 
-    it('should match.test and check using Match.Optional pattern', function() {
-        toTest.forEach(function(val) {
+    it('should match.test and check using Match.Optional pattern', function () {
+        toTest.forEach(function (val) {
             assert(Match.test(val[0], Match.Optional(val[1])), 
                 'match.test ' + val[2] + ' with Match.Optional');
             assert(Match.test(notDefined, Match.Optional(val[1])), 
                 'match.test ' + val[2] + ' with Match.Optional');
 
             assert.doesNotThrow(
-                function() { check(val[0], Match.Optional(val[1])); }, 
+                function () { check(val[0], Match.Optional(val[1])); }, 
                 'check ' + val[2] + ' with Match.Optional'
             );
             assert.doesNotThrow(
-                function() { check(notDefined, Match.Optional(val[1])); },
+                function () { check(notDefined, Match.Optional(val[1])); },
                 'check an undefined against a string'
             );
         });
         assert.equal(Match.test(34, Match.Optional(String)), false,
                 'match.test number with Match.Optional string');
         assert.doesNotThrow(
-            function() { check(func, Match.Optional(Function)); }, 
+            function () { check(func, Match.Optional(Function)); }, 
             'check function with with Match.Optional'
         );
         assert.throws(
-            function() { check(34, Match.Optional(String)); },
+            function () { check(34, Match.Optional(String)); },
             'check a number against a string'
         );
     });
@@ -103,43 +108,60 @@ describe('check module', function() {
         assert(Match.test(['test1', 'test2', 'test3'], [String]), 
             'match.test array of strings with Array [pattern]');
         assert.doesNotThrow(
-            function() { check(['test1', 'test2', 'test3'], [String]); }, 
+            function () { check(['test1', 'test2', 'test3'], [String]); }, 
             'check array of strings with Array [pattern]'
         );
         assert.equal(Match.test(['test1', 'test2', 34], [String]), false,
             'match.test array of strings with Array [pattern] fails');
         assert.throws(
-            function() { check(['test1', 'test2', 34], [String]); }, 
+            function () { check(['test1', 'test2', 34], [String]); }, 
             'check array of strings with Array [pattern] throws'
+        );
+        assert.throws(
+            function () { check(['test1', 'test2', 34], []); }, 
+            'check array with bad array pattern throws'
+        );
+        assert.throws(
+            function () { Match.test([1, 2, 3], []); }, 
+            'match.test array with bad array pattern throws'
         );
     });
 
-    it('should match.test and check using Object {key: pattern}', function() {
+    it('should match.test and check using Object {key: pattern}', function () {
         assert(Match.test({key1: 'test', key2: 6}, {key1: String, key2: Match.Integer}), 
             'match.test array of strings with Object {key: pattern}');
         assert.doesNotThrow(
-            function() { check({key1: 'test', key2: 6}, {key1: String, key2: Match.Integer}); }, 
+            function () { check({key1: 'test', key2: 6}, {key1: String, key2: Match.Integer}); }, 
             'check array of strings with Object {key: pattern}'
         );
         assert.equal(Match.test({key1: 'test'}, {key1: String, key2: Match.Integer}), false,
             'match.test array of strings with Object {key: pattern} fails');
         assert.throws(
-            function() { check({key1: 'test'}, {key1: String, key2: Match.Integer}); }, 
+            function () { check({key1: 'test'}, {key1: String, key2: Match.Integer}); }, 
             'check array of strings with Object {key: pattern} throws'
         );
     });
 
     it('should match.test and check using Match.ObjectIncluding', function() {
-        assert(Match.test({key1: 'test', key2: 6, key3:null, key4: ['hello']}, Match.ObjectIncluding({key1: String, key2: Match.Integer})), 
-            'match.test array of strings with ObjectIncluding');
+        assert(
+            Match.test({key1: 'test', key2: 6, key3:null, key4: ['hello']}, Match.ObjectIncluding({key1: String, key2: Match.Integer})), 
+            'match.test array of strings with ObjectIncluding'
+        );
         assert.doesNotThrow(
-            function() { check({key1: 'test', key2: 6, key3:null, key4: ['hello']}, Match.ObjectIncluding({key1: String, key2: Match.Integer})); }, 
+            function () {
+                check({key1: 'test', key2: 6, key3:null, key4: ['hello']}, Match.ObjectIncluding({key1: String, key2: Match.Integer}));
+            }, 
             'check array of strings with ObjectIncluding'
         );
-        assert.equal(Match.test({key1: 'test', key3:null, key4: ['hello']}, Match.ObjectIncluding({key1: String, key2: Match.Integer})), false,
-            'match.test array of strings with ObjectIncluding fails');
+        assert.equal(
+            Match.test({key1: 'test', key3:null, key4: ['hello']}, Match.ObjectIncluding({key1: String, key2: Match.Integer})), 
+            false,
+            'match.test array of strings with ObjectIncluding fails'
+        );
         assert.throws(
-            function() { check({key1: 'test', key3:null, key4: ['hello']}, Match.ObjectIncluding({key1: String, key2: Match.Integer})); }, 
+            function () {
+                check({key1: 'test', key3:null, key4: ['hello']}, Match.ObjectIncluding({key1: String, key2: Match.Integer}));
+            }, 
             'check array of strings with ObjectIncluding throws'
         );
     });
@@ -205,5 +227,7 @@ describe('check module', function() {
             check(Child, Match.Subclass(Array)) 
         }, 'check instance with Match.Subclass including superclass throws');
     });
+
+
 
 });
