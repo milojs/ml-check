@@ -2,8 +2,7 @@
 
 var _ = require('protojs')
     , assert = require('assert')
-    , check = require('../../lib/util/check')
-    , config = require('../../lib/config')
+    , check = require('../lib/check')
     , Match = check.Match;
 
 describe('check module', function() {
@@ -42,14 +41,6 @@ describe('check module', function() {
         undefined,
         undefined
     ];
-
-    before(function() {
-        config({ check: true });
-    });
-
-    after(function() {
-        config({ check: false });
-    });
 
     it('should match.test for different data types', function() {
         toTest.forEach(function(val, i) {
