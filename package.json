@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "istanbul": "^0.4.0",
-    "mocha": "^2.1.0"
+    "mocha": "^2.1.0",
+    "protojs": "^1.0.3"
   }
 }
