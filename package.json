@@ -1,6 +1,6 @@
 {
   "name": "ml-check",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Isomorphic, runtime, type checking utility",
   "main": "lib/check.js",
   "scripts": {
