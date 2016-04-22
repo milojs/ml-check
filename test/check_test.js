@@ -53,7 +53,21 @@ describe('check module', function() {
             assert.notEqual(Match.test(val[0], failValues[i]), 'match.test fails ' + val[2]);
         });
 
-        assert.notEqual(Match.test(obj, testInst), 'match with non plain object');
+        assert.notEqual(Match.test(obj, testInst), 'fail match with non plain object');
+        assert.notEqual(Match.test(obj, Match.Integer), 'fail match with Match.Integer');
+        assert.notEqual(Match.test(obj, Match.IdentifierString), 'fail match with identifier');
+        assert.throws(
+            function () { check(null, Object); }, 
+            'check null does not match Object'
+        );
+        assert.throws(
+            function () { check(123, 123); }, 
+            'check bad pattern throws'
+        );
+        assert.throws(
+            function () { check({1:1, 2:2, length: 2}, Array); }, 
+            'check pseudo array fails'
+        );
     });
 
     it('should check test for different data types', function() {
@@ -94,7 +108,7 @@ describe('check module', function() {
                 'check an undefined against a string'
             );
         });
-        assert.equal(Match.test(34, Match.Optional(String)), false,
+        assert.notEqual(Match.test(34, Match.Optional(String)),
                 'match.test number with Match.Optional string');
         assert.doesNotThrow(
             function () { check(func, Match.Optional(Function)); }, 
@@ -113,7 +127,7 @@ describe('check module', function() {
             function () { check(['test1', 'test2', 'test3'], [String]); }, 
             'check array of strings with Array [pattern]'
         );
-        assert.equal(Match.test(['test1', 'test2', 34], [String]), false,
+        assert.notEqual(Match.test(['test1', 'test2', 34], [String]),
             'match.test array of strings with Array [pattern] fails');
         assert.throws(
             function () { check(['test1', 'test2', 34], [String]); }, 
@@ -127,6 +141,10 @@ describe('check module', function() {
             function () { Match.test([1, 2, 3], []); }, 
             'match.test array with bad array pattern throws'
         );
+        assert.notEqual(
+            Match.test({}, [String]), 
+            'match.test array with bad array pattern throws'
+        );
     });
 
     it('should match.test and check using Object {key: pattern}', function () {
@@ -136,12 +154,16 @@ describe('check module', function() {
             function () { check({key1: 'test', key2: 6}, {key1: String, key2: Match.Integer}); }, 
             'check array of strings with Object {key: pattern}'
         );
-        assert.equal(Match.test({key1: 'test'}, {key1: String, key2: Match.Integer}), false,
+        assert.notEqual(Match.test({key1: 'test'}, {key1: String, key2: Match.Integer}),
             'match.test array of strings with Object {key: pattern} fails');
         assert.throws(
             function () { check({key1: 'test'}, {key1: String, key2: Match.Integer}); }, 
             'check array of strings with Object {key: pattern} throws'
         );
+        assert(Match.test({key1: 'test', key2: 'test'}, {key1: String, key2: Match.Optional(String)}), 
+            'match.test array of strings with one being optional');
+        assert(Match.test({key1: 'test'}, {key1: String, key2: Match.Optional(String)}), 
+            'match.test array of strings with one being optional and that value missing');
     });
 
     it('should match.test and check using Match.ObjectIncluding', function() {
@@ -155,9 +177,8 @@ describe('check module', function() {
             }, 
             'check array of strings with ObjectIncluding'
         );
-        assert.equal(
+        assert.notEqual(
             Match.test({key1: 'test', key3:null, key4: ['hello']}, Match.ObjectIncluding({key1: String, key2: Match.Integer})), 
-            false,
             'match.test array of strings with ObjectIncluding fails'
         );
         assert.throws(
@@ -171,7 +192,7 @@ describe('check module', function() {
     it('should match.test and check using Match.OneOf', function() {
         assert(Match.test('test', Match.OneOf(null, Number, String)),
             'match.test string against number of types');
-        assert.equal(Match.test([], Match.OneOf(null, Number, String)), false,
+        assert.notEqual(Match.test([], Match.OneOf(null, Number, String)),
             'match.test array against number of types fails');
         assert.doesNotThrow(
             function() { check('test', Match.OneOf(null, Number, String)) },
@@ -191,7 +212,7 @@ describe('check module', function() {
         });
         assert(Match.test('test', NonEmptyString),
             'match.test string against Match.Where');
-        assert.equal(Match.test('', NonEmptyString), false,
+        assert.notEqual(Match.test('', NonEmptyString),
             'match.test array against Match.Where fails');
         assert.doesNotThrow(
             function() { check('test', NonEmptyString) },
@@ -207,7 +228,7 @@ describe('check module', function() {
 
         assert(Match.test(objPass, Match.ObjectHash(Function)),
             'match.test object against Match.ObjectHash');
-        assert.equal(Match.test(objFail, Match.ObjectHash(Function)), false,
+        assert.notEqual(Match.test(objFail, Match.ObjectHash(Function)),
             'match.test object against Match.ObjectHash fails');
         assert.doesNotThrow(function() {
             check(objPass, Match.ObjectHash(Function));
@@ -226,11 +247,14 @@ describe('check module', function() {
         
         assert(Match.test(Child, Match.Subclass(Parent)),
             'match.test instance with Match.Subclass including superclass');
-        assert.equal(Match.test(Child, Match.Subclass(Array)), false,
+        assert.notEqual(Match.test(Child, Match.Subclass(Array)),
             'match.test instance with Match.Subclass including superclass fails');
         assert.doesNotThrow(function() { 
             check(Child, Match.Subclass(Parent)) 
         }, 'check instance with Match.Subclass including superclass');
+        assert.doesNotThrow(function() { 
+            check(Child, Match.Subclass(Child, true)) 
+        }, 'check instance with Match.Subclass and match class itself');
         assert.throws(function() { 
             check(Child, Match.Subclass(Array)) 
         }, 'check instance with Match.Subclass including superclass throws');
