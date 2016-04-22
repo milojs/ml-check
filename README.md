@@ -2,6 +2,8 @@
 An isomorphic, runtime, type checking utility that can be used on the server or in the client.
 It is used in the reactive framework [milojs](https://github.com/milojs/milo)
 
+[![Build Status](https://travis-ci.org/milojs/ml-check.svg?branch=master)](https://travis-ci.org/milojs/ml-check)
+[![npm version](https://badge.fury.io/js/ml-check.svg)](https://badge.fury.io/js/ml-check)
 [![Test Coverage](https://codeclimate.com/github/milojs/ml-check/badges/coverage.svg)](https://codeclimate.com/github/milojs/ml-check/coverage)
 
 
